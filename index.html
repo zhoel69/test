@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>Native Orientation Test</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+html,
+body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+}
+
+body{
+    min-height:100vh;
+    background:#111;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.box{
+    width:100%;
+    max-width:500px;
+    background:#222;
+    border-radius:18px;
+    padding:24px;
+}
+
+h1{
+    margin:0 0 10px;
+    font-size:22px;
+    text-align:center;
+}
+
+.description{
+    color:#aaa;
+    font-size:14px;
+    line-height:1.6;
+    text-align:center;
+}
+
+button{
+    width:100%;
+    border:0;
+    border-radius:12px;
+    padding:15px;
+    margin-top:12px;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.fullscreen{
+    background:#2563eb;
+    color:#fff;
+}
+
+.status{
+    margin-top:18px;
+    padding:15px;
+    background:#000;
+    border-radius:12px;
+    font-size:13px;
+    line-height:1.8;
+    word-break:break-word;
+}
+
+.good{
+    color:#4ade80;
+}
+
+.bad{
+    color:#f87171;
+}
+
+.info{
+    color:#facc15;
+}
+
+#orientationBox{
+    margin-top:15px;
+    padding:20px;
+    border-radius:12px;
+    background:#151515;
+    text-align:center;
+}
+
+#orientationText{
+    font-size:25px;
+    font-weight:bold;
+}
+
+#dimensions{
+    color:#aaa;
+    margin-top:8px;
+    font-size:13px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="box">
+
+<h1>
+📱 Native Rotation Test
+</h1>
+
+<div class="description">
+
+Tes apakah WebView AppsGeyser
+mengikuti rotasi Android secara native.
+
+<br><br>
+
+<strong>
+Tidak menggunakan screen.orientation.lock()
+</strong>
+
+</div>
+
+
+<button
+    class="fullscreen"
+    onclick="enterFullscreen()">
+
+🔳 MASUK FULLSCREEN
+
+</button>
+
+
+<div id="orientationBox">
+
+<div id="orientationText">
+PORTRAIT
+</div>
+
+<div id="dimensions">
+392 × 838
+</div>
+
+</div>
+
+
+<div
+    class="status"
+    id="status">
+
+Memulai pemeriksaan...
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   NATIVE ORIENTATION TEST
+   ===================================================== */
+
+/*
+ * PENTING:
+ *
+ * Script ini TIDAK menggunakan:
+ *
+ * screen.orientation.lock()
+ *
+ * Kita hanya mendeteksi apakah Android
+ * memutar WebView secara native.
+ */
+
+
+/* =====================================================
+   STATUS
+   ===================================================== */
+
+const statusBox =
+    document.getElementById(
+        "status"
+    );
+
+
+function log(
+    text,
+    type = ""
+){
+
+    const line =
+        document.createElement(
+            "div"
+        );
+
+    line.textContent =
+        text;
+
+    if(type){
+
+        line.className =
+            type;
+
+    }
+
+    statusBox.appendChild(
+        line
+    );
+
+}
+
+
+/* =====================================================
+   ORIENTATION DETECTOR
+   ===================================================== */
+
+function getNativeOrientation(){
+
+    const width =
+        window.innerWidth;
+
+    const height =
+        window.innerHeight;
+
+
+    if(width > height){
+
+        return "LANDSCAPE";
+
+    }
+
+
+    return "PORTRAIT";
+
+}
+
+
+/* =====================================================
+   UPDATE DISPLAY
+   ===================================================== */
+
+function updateOrientation(){
+
+    const width =
+        window.innerWidth;
+
+    const height =
+        window.innerHeight;
+
+    const orientation =
+        getNativeOrientation();
+
+
+    document
+        .getElementById(
+            "orientationText"
+        )
+        .textContent =
+            orientation;
+
+
+    document
+        .getElementById(
+            "dimensions"
+        )
+        .textContent =
+            width +
+            " × " +
+            height;
+
+
+    log(
+        "📐 Viewport: " +
+        width +
+        " × " +
+        height +
+        " → " +
+        orientation,
+        orientation === "LANDSCAPE"
+            ? "good"
+            : "info"
+    );
+
+}
+
+
+/* =====================================================
+   FULLSCREEN
+   ===================================================== */
+
+async function enterFullscreen(){
+
+    log(
+        "Mencoba masuk fullscreen..."
+    );
+
+
+    try{
+
+        if(
+            document.documentElement
+                .requestFullscreen
+        ){
+
+            await document
+                .documentElement
+                .requestFullscreen();
+
+            log(
+                "✅ Fullscreen berhasil.",
+                "good"
+            );
+
+        }else{
+
+            log(
+                "❌ Fullscreen API tidak tersedia.",
+                "bad"
+            );
+
+        }
+
+    }catch(error){
+
+        log(
+            "❌ Fullscreen gagal: " +
+            error.name +
+            " - " +
+            error.message,
+            "bad"
+        );
+
+    }
+
+
+    updateOrientation();
+
+}
+
+
+/* =====================================================
+   FULLSCREEN CHANGE
+   ===================================================== */
+
+document.addEventListener(
+    "fullscreenchange",
+    function(){
+
+        const active =
+            !!document.fullscreenElement;
+
+
+        log(
+            active
+                ? "🔳 Fullscreen AKTIF"
+                : "🔲 Fullscreen NONAKTIF"
+        );
+
+
+        updateOrientation();
+
+    }
+);
+
+
+/* =====================================================
+   RESIZE
+   ===================================================== */
+
+/*
+ * Ini sangat penting.
+ *
+ * Kalau Android benar-benar memutar
+ * Activity/WebView dari portrait ke landscape,
+ * ukuran viewport biasanya berubah.
+ */
+
+window.addEventListener(
+    "resize",
+    function(){
+
+        log(
+            "🔄 RESIZE TERDETEKSI",
+            "good"
+        );
+
+        updateOrientation();
+
+    }
+);
+
+
+/* =====================================================
+   ORIENTATIONCHANGE
+   ===================================================== */
+
+window.addEventListener(
+    "orientationchange",
+    function(){
+
+        log(
+            "🔄 ORIENTATIONCHANGE TERDETEKSI",
+            "good"
+        );
+
+        setTimeout(
+            updateOrientation,
+            300
+        );
+
+    }
+);
+
+
+/* =====================================================
+   VISUAL VIEWPORT
+   ===================================================== */
+
+if(window.visualViewport){
+
+    window.visualViewport.addEventListener(
+        "resize",
+        function(){
+
+            log(
+                "👁️ Visual viewport berubah",
+                "good"
+            );
+
+            updateOrientation();
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   SCREEN ORIENTATION
+   ===================================================== */
+
+/*
+ * PERHATIKAN:
+ *
+ * Kita hanya MEMBACA status.
+ *
+ * Tidak ada:
+ *
+ * screen.orientation.lock()
+ *
+ * Tidak ada:
+ *
+ * screen.orientation.unlock()
+ */
+
+if(screen.orientation){
+
+    log(
+        "screen.orientation tersedia.",
+        "good"
+    );
+
+    log(
+        "Orientation awal: " +
+        screen.orientation.type
+    );
+
+    log(
+        "Angle awal: " +
+        screen.orientation.angle
+    );
+
+
+    screen.orientation.addEventListener(
+        "change",
+        function(){
+
+            log(
+                "📱 screen.orientation berubah: " +
+                screen.orientation.type +
+                " / " +
+                screen.orientation.angle +
+                "°",
+                "good"
+            );
+
+            updateOrientation();
+
+        }
+    );
+
+}else{
+
+    log(
+        "screen.orientation tidak tersedia.",
+        "bad"
+    );
+
+}
+
+
+/* =====================================================
+   DEVICE INFO
+   ===================================================== */
+
+log(
+    "User Agent: " +
+    navigator.userAgent
+);
+
+
+/* =====================================================
+   START
+   ===================================================== */
+
+updateOrientation();
+
+log(
+    "━━━━━━━━━━━━━━━━━━━━"
+);
+
+log(
+    "TES SIAP.",
+    "good"
+);
+
+log(
+    "1. Tekan MASUK FULLSCREEN."
+);
+
+log(
+    "2. Pastikan Auto Rotate HP AKTIF."
+);
+
+log(
+    "3. Putar HP ke posisi LANDSCAPE."
+);
+
+log(
+    "4. Lihat apakah layar ikut berputar."
+);
+
+</script>
+
+</body>
+
+</html>
