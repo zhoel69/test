@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Orientation API Test</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .box {
+        width: 100%;
+        max-width: 500px;
+        background: #222;
+        border-radius: 18px;
+        padding: 24px;
+        text-align: center;
+    }
+
+    h1 {
+        margin-top: 0;
+    }
+
+    button {
+        width: 100%;
+        padding: 16px;
+        margin-top: 12px;
+        border: 0;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    #fullscreenBtn {
+        background: #fff;
+        color: #111;
+    }
+
+    #landscapeBtn {
+        background: #4caf50;
+        color: white;
+    }
+
+    #unlockBtn {
+        background: #555;
+        color: white;
+    }
+
+    .status {
+        margin-top: 20px;
+        padding: 15px;
+        background: #000;
+        border-radius: 12px;
+        text-align: left;
+        font-size: 14px;
+        line-height: 1.7;
+        word-break: break-word;
+    }
+
+    .good {
+        color: #4caf50;
+    }
+
+    .bad {
+        color: #ff5252;
+    }
+
+    .info {
+        color: #ffc107;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+    <h1>📱 Orientation API Test</h1>
+
+    <p>
+        Tester untuk mengetahui apakah WebView AppsGeyser
+        mengizinkan rotasi landscape.
+    </p>
+
+    <button id="fullscreenBtn">
+        🔳 Masuk Fullscreen
+    </button>
+
+    <button id="landscapeBtn">
+        🔄 Coba Landscape
+    </button>
+
+    <button id="unlockBtn">
+        🔓 Unlock Orientation
+    </button>
+
+    <div class="status" id="status">
+        Memeriksa...
+    </div>
+
+</div>
+
+<script>
+
+const statusBox = document.getElementById("status");
+
+function log(message, type = "") {
+
+    const line = document.createElement("div");
+
+    if(type){
+        line.className = type;
+    }
+
+    line.textContent = message;
+
+    statusBox.appendChild(line);
+}
+
+function clearLog(){
+    statusBox.innerHTML = "";
+}
+
+function checkOrientationAPI(){
+
+    clearLog();
+
+    log("=== HASIL TES ===");
+
+    log(
+        "User Agent: " +
+        navigator.userAgent
+    );
+
+    log(
+        "Mode: " +
+        (
+            window.matchMedia("(display-mode: standalone)").matches
+            ? "Standalone"
+            : "Browser/WebView"
+        )
+    );
+
+    if(screen.orientation){
+
+        log(
+            "screen.orientation: TERSEDIA",
+            "good"
+        );
+
+        log(
+            "Tipe: " +
+            screen.orientation.type
+        );
+
+        log(
+            "Angle: " +
+            screen.orientation.angle
+        );
+
+        if(
+            typeof screen.orientation.lock === "function"
+        ){
+
+            log(
+                "orientation.lock(): TERSEDIA",
+                "good"
+            );
+
+        }else{
+
+            log(
+                "orientation.lock(): TIDAK TERSEDIA",
+                "bad"
+            );
+
+        }
+
+        if(
+            typeof screen.orientation.unlock === "function"
+        ){
+
+            log(
+                "orientation.unlock(): TERSEDIA",
+                "good"
+            );
+
+        }else{
+
+            log(
+                "orientation.unlock(): TIDAK TERSEDIA",
+                "bad"
+            );
+
+        }
+
+    }else{
+
+        log(
+            "screen.orientation: TIDAK TERSEDIA",
+            "bad"
+        );
+
+    }
+
+    log(
+        "Window orientation: " +
+        window.innerWidth +
+        " × " +
+        window.innerHeight
+    );
+
+    log(
+        "HTTPS: " +
+        (
+            location.protocol === "https:"
+            ? "YA"
+            : "TIDAK"
+        ),
+        location.protocol === "https:"
+        ? "good"
+        : "bad"
+    );
+
+}
+
+async function enterFullscreen(){
+
+    try{
+
+        if(document.documentElement.requestFullscreen){
+
+            await document.documentElement.requestFullscreen();
+
+            log(
+                "Fullscreen: BERHASIL",
+                "good"
+            );
+
+        }else{
+
+            log(
+                "Fullscreen API: TIDAK TERSEDIA",
+                "bad"
+            );
+
+        }
+
+    }catch(error){
+
+        log(
+            "Fullscreen ERROR: " +
+            error.message,
+            "bad"
+        );
+
+    }
+
+}
+
+async function tryLandscape(){
+
+    log(
+        "Mencoba screen.orientation.lock('landscape')..."
+    );
+
+    if(
+        !screen.orientation ||
+        typeof screen.orientation.lock !== "function"
+    ){
+
+        log(
+            "❌ Orientation Lock API tidak tersedia.",
+            "bad"
+        );
+
+        return;
+
+    }
+
+    try{
+
+        await screen.orientation.lock("landscape");
+
+        log(
+            "✅ LANDSCAPE LOCK BERHASIL!",
+            "good"
+        );
+
+        log(
+            "Orientation sekarang: " +
+            screen.orientation.type,
+            "good"
+        );
+
+    }catch(error){
+
+        log(
+            "❌ LANDSCAPE LOCK DITOLAK.",
+            "bad"
+        );
+
+        log(
+            "Error: " +
+            error.name +
+            " - " +
+            error.message,
+            "bad"
+        );
+
+    }
+
+}
+
+function unlockOrientation(){
+
+    try{
+
+        if(
+            screen.orientation &&
+            typeof screen.orientation.unlock === "function"
+        ){
+
+            screen.orientation.unlock();
+
+            log(
+                "🔓 Orientation di-unlock.",
+                "good"
+            );
+
+        }else{
+
+            log(
+                "Orientation unlock tidak tersedia.",
+                "bad"
+            );
+
+        }
+
+    }catch(error){
+
+        log(
+            "Unlock ERROR: " +
+            error.message,
+            "bad"
+        );
+
+    }
+
+}
+
+document
+.getElementById("fullscreenBtn")
+.addEventListener(
+    "click",
+    enterFullscreen
+);
+
+document
+.getElementById("landscapeBtn")
+.addEventListener(
+    "click",
+    tryLandscape
+);
+
+document
+.getElementById("unlockBtn")
+.addEventListener(
+    "click",
+    unlockOrientation
+);
+
+document.addEventListener(
+    "fullscreenchange",
+    () => {
+
+        log(
+            "Fullscreen berubah: " +
+            (
+                document.fullscreenElement
+                ? "AKTIF"
+                : "NONAKTIF"
+            )
+        );
+
+    }
+);
+
+if(screen.orientation){
+
+    screen.orientation.addEventListener(
+        "change",
+        () => {
+
+            log(
+                "🔄 Orientation berubah → " +
+                screen.orientation.type +
+                " / " +
+                screen.orientation.angle + "°",
+                "good"
+            );
+
+        }
+    );
+
+}
+
+checkOrientationAPI();
+
+</script>
+
+</body>
+</html>
